@@ -34,6 +34,7 @@ Docker e Docker Compose instalados.
 ### Execução via Docker (Ambiente Completo)
 
 Para subir o Back-end, Front-end e Banco de Dados de uma vez:
+
 `git clone https://github.com/Ldsantana2/Teste-Pratico---Autoflex.git
 cd Teste-Pratico---Autoflex
 docker-compose up --build
@@ -47,12 +48,14 @@ O projeto foi desenvolvido contando com testes automatizados no back e no front.
 ### Testes de Back-end (Unitários e Integração)
 
 Utilizam JUnit 5 e RestAssured para validar os endpoints e as regras de negócio.
+
 `cd inventory-api
 ./mvnw test`
 
 ### Testes de Front-end (E2E com Cypress)
 
 Testes que simulam o comportamento real do usuário no navegador.
+
 `cd inventory-web`
 
 #### Para abrir a interface do Cypress:
