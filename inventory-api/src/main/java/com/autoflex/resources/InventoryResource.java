@@ -6,6 +6,7 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Path("/api")
 @Produces(MediaType.APPLICATION_JSON)
@@ -31,9 +32,7 @@ public class InventoryResource {
     @Transactional
     public Response updateMaterial(@PathParam("id") Long id, RawMaterial m) {
         RawMaterial entity = RawMaterial.findById(id);
-        if (entity == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
+        if (entity == null) return Response.status(Response.Status.NOT_FOUND).build();
         entity.name = m.name;
         entity.stockQuantity = m.stockQuantity;
         return Response.ok(entity).build(); 
@@ -44,10 +43,7 @@ public class InventoryResource {
     @Transactional
     public Response deleteMaterial(@PathParam("id") Long id) {
         boolean deleted = RawMaterial.deleteById(id);
-        if (!deleted) {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
-        return Response.noContent().build();
+        return deleted ? Response.noContent().build() : Response.status(Response.Status.NOT_FOUND).build();
     }
 
     @GET
@@ -75,9 +71,7 @@ public class InventoryResource {
     @Transactional
     public Response updateProduct(@PathParam("id") Long id, Product p) {
         Product entity = Product.findById(id);
-        if (entity == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
+        if (entity == null) return Response.status(Response.Status.NOT_FOUND).build();
 
         entity.name = p.name;
         entity.price = p.price;
@@ -100,9 +94,62 @@ public class InventoryResource {
     @Transactional
     public Response deleteProduct(@PathParam("id") Long id) {
         boolean deleted = Product.deleteById(id);
-        if (!deleted) {
-            return Response.status(Response.Status.NOT_FOUND).build();
+        return deleted ? Response.noContent().build() : Response.status(Response.Status.NOT_FOUND).build();
+    }
+
+    @GET
+    @Path("/production/suggested")
+    public Response getSuggestedProduction() {
+        List<Product> allProducts = Product.listAll();
+        List<RawMaterial> allMaterials = RawMaterial.listAll();
+
+        Map<Long, Double> tempStock = allMaterials.stream()
+            .collect(Collectors.toMap(m -> m.id, m -> m.stockQuantity));
+
+        List<Product> sortedProducts = allProducts.stream()
+            .sorted(Comparator.comparing((Product p) -> p.price).reversed())
+            .collect(Collectors.toList());
+
+        List<Map<String, Object>> productionPlan = new ArrayList<>();
+        double totalRevenue = 0;
+
+        for (Product p : sortedProducts) {
+            long unitsProduced = 0;
+            boolean canProduce = true;
+
+            if (p.materials == null || p.materials.isEmpty()) canProduce = false;
+
+            while (canProduce) {
+                for (ProductMaterial pm : p.materials) {
+                    Double available = tempStock.get(pm.rawMaterial.id);
+                    if (available == null || available < pm.requiredQuantity) {
+                        canProduce = false;
+                        break;
+                    }
+                }
+
+                if (canProduce) {
+                    for (ProductMaterial pm : p.materials) {
+                        tempStock.put(pm.rawMaterial.id, tempStock.get(pm.rawMaterial.id) - pm.requiredQuantity);
+                    }
+                    unitsProduced++;
+                }
+            }
+
+            Map<String, Object> item = new HashMap<>();
+            item.put("id", p.id);
+            item.put("name", p.name);
+            item.put("price", p.price);
+            item.put("suggestedQuantity", unitsProduced);
+            productionPlan.add(item);
+            
+            totalRevenue += (unitsProduced * p.price);
         }
-        return Response.noContent().build();
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("productionPlan", productionPlan);
+        response.put("totalRevenue", totalRevenue);
+
+        return Response.ok(response).build();
     }
 }
