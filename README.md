@@ -35,15 +35,15 @@ Docker e Docker Compose instalados.
 
 Para subir o Back-end, Front-end e Banco de Dados de uma vez:
 
-`git clone https://github.com/Ldsantana2/Teste-Pratico---Autoflex.git
+`git clone https://github.com/Ldsantana2/Teste-Pratico---Autoflex.git`
 
-cd Teste-Pratico---Autoflex
+`cd Teste-Pratico---Autoflex`
 
-docker-compose up --build
+`docker-compose up --build`
 
-Front-end: http://localhost:3000
+`Front-end: http://localhost:3000`
 
-Back-end: http://localhost:8080`
+`Back-end: http://localhost:8080`
 
 ## Suíte de Testes
 
@@ -53,8 +53,9 @@ O projeto foi desenvolvido contando com testes automatizados no back e no front.
 
 Utilizam JUnit 5 e RestAssured para validar os endpoints e as regras de negócio.
 
-`cd inventory-api
-./mvnw test`
+`cd inventory-api`
+
+`./mvnw test`
 
 ### Testes de Front-end (E2E com Cypress)
 
