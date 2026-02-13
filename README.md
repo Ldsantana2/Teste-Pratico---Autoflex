@@ -36,9 +36,13 @@ Docker e Docker Compose instalados.
 Para subir o Back-end, Front-end e Banco de Dados de uma vez:
 
 `git clone https://github.com/Ldsantana2/Teste-Pratico---Autoflex.git
+
 cd Teste-Pratico---Autoflex
+
 docker-compose up --build
+
 Front-end: http://localhost:3000
+
 Back-end: http://localhost:8080`
 
 ## Suíte de Testes
